@@ -114,7 +114,13 @@ export default function App() {
             </Button>
           </>
         ) : (
-          <span className="text-amber-700 text-sm italic">訪客模式（分數不儲存）</span>
+          <>
+            <span className="text-amber-700 text-sm italic">訪客模式</span>
+            <Button variant="outline" size="sm" onClick={logout}
+              className="border-amber-400 text-amber-700 hover:bg-amber-100">
+              ← 返回登入
+            </Button>
+          </>
         )}
       </div>
 
