@@ -141,3 +141,8 @@ vite.config.ts.timestamp-*
 build/
 */.DS_Store
 .vercel/
+
+# SQLite database
+game.db
+game.db-shm
+game.db-wal
