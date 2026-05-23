@@ -78,13 +78,29 @@ export default function App() {
         </p>
       </div>
 
-      <div className="mb-8">
+      <div className="mb-8 flex items-center gap-4">
         <div className="text-2xl text-center p-4 bg-amber-200/80 backdrop-blur-sm rounded-lg shadow-lg border-2 border-amber-400">
           <span className="text-amber-900">Current Score: </span>
           <span className={`${score >= 0 ? 'text-green-600' : 'text-red-600'}`}>
             ${score}
           </span>
         </div>
+        {gameEnded && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4 }}
+            className={`text-2xl font-semibold px-6 py-4 rounded-lg shadow-lg border-2 ${
+              score > 0
+                ? 'bg-green-100 text-green-700 border-green-400'
+                : score === 0
+                ? 'bg-amber-100 text-amber-700 border-amber-400'
+                : 'bg-red-100 text-red-700 border-red-400'
+            }`}
+          >
+            {score > 0 ? '🏆 Win' : score === 0 ? '🤝 Tie' : '💀 Loss'}
+          </motion.div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
