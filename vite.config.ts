@@ -52,6 +52,9 @@
     build: {
       target: 'esnext',
       outDir: 'build',
+      // GitHub Pages 部署時需設定 base 為 /<repo-name>/
+      // Vercel 與本機開發不受影響（Vercel 自動處理根路徑）
+      base: process.env.GITHUB_PAGES === 'true' ? '/claude_code_treasure_game/' : '/',
     },
     server: {
       port: 3000,
