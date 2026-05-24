@@ -11,6 +11,7 @@ npm run dev:client    # Frontend only (Vite)
 npm run dev:server    # Backend only (nodemon)
 npm run build         # Production build → outputs to build/ (not dist/)
 npm start             # Run backend in production mode
+npm run deploy:gh     # Build with GitHub Pages base URL and deploy to gh-pages branch
 ```
 
 There are no lint or test scripts configured.
@@ -35,7 +36,7 @@ Vite frontend (:3000)  ──/api/* proxy──▶  Express backend (:3001)
 
 ### Frontend (`src/`)
 
-The game UI is in **`src/App.tsx`**. It renders three treasure chests; one randomly contains treasure (+$100), others contain skeletons (-$50). Game ends when treasure is found or all chests are opened.
+The game UI is in **`src/App.tsx`**. It renders three treasure chests; one randomly contains treasure (+$150), others contain skeletons (-$50). Game ends when treasure is found or all chests are opened.
 
 **Auth flow** — `App.tsx` reads `useAuth()` at the top and gates rendering:
 - `status === 'loading'` → amber loading screen
@@ -106,3 +107,78 @@ scores (id, user_id → users.id CASCADE, score, outcome CHECK('win'|'tie'|'loss
 | `src/audios/chest_open_with_evil_laugh.mp3` | Skeleton sound |
 
 Audio is imported as ES module assets and played via `new Audio(src).play()`.
+
+## Deployment
+
+本專案支援兩種部署目標，各有對應的 Claude Code 自訂指令。
+
+### 快速指令
+
+| 指令 | 平台 | 功能 |
+|------|------|------|
+| `/deploy_vercel` | Vercel | 完整部署（前端 + 後端 API） |
+| `/deploy_github_page` | GitHub Pages | 靜態前端部署（僅訪客模式） |
+
+### 線上網址
+
+| 平台 | 網址 |
+|------|------|
+| Vercel（完整版） | https://claudecodetreasuregame-zeta.vercel.app |
+| GitHub Pages（訪客版） | https://kennykang7012.github.io/claude_code_treasure_game/ |
+| GitHub 程式碼 | https://github.com/KennyKang7012/claude_code_treasure_game |
+
+### 功能差異
+
+| 功能 | GitHub Pages | Vercel |
+|------|:-----------:|:------:|
+| 訪客模式遊玩 | ✅ | ✅ |
+| 登入 / 註冊 | ❌ | ✅ |
+| 分數儲存 | ❌ | ✅ |
+
+### 關鍵部署設定
+
+**`vercel.json`** — Vercel 路由設定，`/api/*` 導向 Serverless Function：
+```json
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index.js" },
+    { "source": "/(.*)",     "destination": "/index.html"   }
+  ]
+}
+```
+
+**`vite.config.ts`** — `base` 必須在 `defineConfig` **根層級**（不可放在 `build` 內，否則靜默忽略導致白畫面）：
+```ts
+export default defineConfig({
+  base: process.env.GITHUB_PAGES === 'true' ? '/claude_code_treasure_game/' : '/',
+  build: { target: 'esnext', outDir: 'build' },
+})
+```
+
+**`server/index.js`** — Vercel 環境不自行 listen，改用 `module.exports = app`：
+```js
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, ...);
+}
+module.exports = app;
+```
+
+**`server/database.js`** — Vercel Serverless 只有 `/tmp` 可寫入：
+```js
+const dbPath = process.env.VERCEL === '1' ? '/tmp/game.db' : './game.db';
+```
+
+### Vercel 環境變數
+
+Vercel 上只需設定一個環境變數（`.env` 不會被上傳）：
+
+```bash
+vercel env add JWT_SECRET production
+```
+
+`PORT` 和 `DATABASE_PATH` 不需要設定。
+
+### 注意事項
+
+- **SQLite 在 Vercel 上是短暫性的**：Serverless Function 冷啟動後 `/tmp/game.db` 會清空。`server/routes/scores.js` 已加入容錯邏輯，儲存分數前若找不到使用者會從 JWT 自動補建。
+- **詳細排查文件**：見 `docs/` 目錄下的各知識庫檔案。
