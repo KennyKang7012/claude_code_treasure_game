@@ -65,7 +65,7 @@ export default function App() {
       const updatedBoxes = prevBoxes.map(box => {
         if (box.id === boxId && !box.isOpen) {
           new Audio(box.hasTreasure ? chestOpenSound : evilLaughSound).play();
-          const newScore = box.hasTreasure ? score + 100 : score - 50;
+          const newScore = box.hasTreasure ? score + 150 : score - 50;
           setScore(newScore);
           return { ...box, isOpen: true };
         }
@@ -130,7 +130,7 @@ export default function App() {
           Click on the treasure chests to discover what's inside!
         </p>
         <p className="text-amber-700 text-sm">
-          💰 Treasure: +$100 | 💀 Skeleton: -$50
+          💰 Treasure: +$150 | 💀 Skeleton: -$50
         </p>
       </div>
 
@@ -221,7 +221,7 @@ export default function App() {
                       : 'bg-red-100 text-red-800 border border-red-300'
                   }`}
                 >
-                  {box.hasTreasure ? '+$100' : '-$50'}
+                  {box.hasTreasure ? '+$150' : '-$50'}
                 </motion.div>
               ) : (
                 <div className="text-amber-700 p-2">
