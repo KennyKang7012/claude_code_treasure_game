@@ -96,23 +96,35 @@ grep -n "GITHUB_PAGES" vite.config.ts 2>&1
 
 **情況 A：找到 `GITHUB_PAGES`** → 已設定，繼續下一步。
 
-**情況 B：找不到** → 在 `vite.config.ts` 的 `build` 區塊加入 base 設定：
+**情況 B：找不到** → 在 `vite.config.ts` 的 **`defineConfig` 根層級**加入 base 設定。
+
+> ⚠️ 注意：`base` **必須放在根層級**，不可放在 `build: {}` 內部，
+> 否則 Vite 會靜默忽略，導致部署後白畫面。
 
 找到：
 ```ts
-build: {
-  target: 'esnext',
-  outDir: 'build',
-},
+export default defineConfig({
+  plugins: [react()],
+  // ... 其他設定 ...
+  build: {
+    target: 'esnext',
+    outDir: 'build',
+  },
+})
 ```
 
-替換為：
+替換為（`base` 加在根層級，`build` 區塊不動）：
 ```ts
-build: {
-  target: 'esnext',
-  outDir: 'build',
+export default defineConfig({
+  plugins: [react()],
+  // GitHub Pages 需要 base = /<repo-name>/；本機開發與 Vercel 保持 '/'
   base: process.env.GITHUB_PAGES === 'true' ? '/<REPO_NAME>/' : '/',
-},
+  // ... 其他設定 ...
+  build: {
+    target: 'esnext',
+    outDir: 'build',
+  },
+})
 ```
 
 （`<REPO_NAME>` 替換成步驟 4 取得的實際名稱）
