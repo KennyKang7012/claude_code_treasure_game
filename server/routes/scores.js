@@ -19,6 +19,19 @@ router.post('/', authenticateToken, (req, res) => {
   }
 
   try {
+    // Vercel Serverless 冷啟動時 /tmp/game.db 是空的，
+    // 但 JWT 仍帶著有效的 user_id + username。
+    // 若找不到使用者，就從 JWT 資料自動補建，確保外鍵不會炸。
+    const existing = db
+      .prepare('SELECT id FROM users WHERE id = ?')
+      .get(req.user.id);
+
+    if (!existing) {
+      db.prepare(
+        'INSERT OR IGNORE INTO users (id, username, password) VALUES (?, ?, ?)'
+      ).run(req.user.id, req.user.username, '[jwt-restored]');
+    }
+
     const stmt = db.prepare(
       'INSERT INTO scores (user_id, score, outcome, boxes_opened) VALUES (?, ?, ?, ?)'
     );

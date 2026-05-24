@@ -2,7 +2,10 @@ const Database = require('better-sqlite3');
 const path = require('path');
 require('dotenv').config();
 
-const dbPath = path.resolve(process.env.DATABASE_PATH || './game.db');
+// Vercel serverless 只有 /tmp 可寫；本地開發使用專案根目錄
+const dbPath = process.env.VERCEL === '1'
+  ? '/tmp/game.db'
+  : path.resolve(process.env.DATABASE_PATH || './game.db');
 const db = new Database(dbPath);
 
 // 啟用外鍵約束
